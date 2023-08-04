@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.Assert;
 import reactor.core.publisher.Flux;
+import reactor.util.function.Tuples;
 
 @Slf4j
 public class GenerateTest {
@@ -18,5 +19,22 @@ public class GenerateTest {
                 })
                 .subscribe(data -> log.info("{}", data));
         Assert.isTrue(1 == 1, "test");
+    }
+
+    /**
+     * 구구단 중 3단 출력
+     */
+    @Test
+    public void multiTest() {
+        final int dan = 3;
+        Flux.generate(
+                () -> Tuples.of(dan, 1),
+                (state, sink) -> {
+                    sink.next(String.format("%d * %d = %d", state.getT1(), state.getT2(), (state.getT1() * state.getT2())));
+
+                    if(state.getT2() == 9) sink.complete();
+                    return Tuples.of(dan, state.getT2() + 1);
+                }
+        ).subscribe(d -> log.info("{}", d));
     }
 }
